@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face{font-family:Amiri;font-weight:400;src:url(fonts/amiri-arabic-400-normal.woff2)}
+@font-face{font-family:Amiri;font-weight:700;src:url(fonts/amiri-arabic-700-normal.woff2)}
+@font-face{font-family:Tajawal;font-weight:400;src:url(fonts/tajawal-arabic-400-normal.woff2)}
+@font-face{font-family:Tajawal;font-weight:500;src:url(fonts/tajawal-arabic-500-normal.woff2)}
+@font-face{font-family:Tajawal;font-weight:700;src:url(fonts/tajawal-arabic-700-normal.woff2)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:#000}
+.layer{position:absolute;inset:0}
+svg.layer{width:1920px;height:1080px}
+.bar{position:absolute;left:0;right:0;height:130px;background:#000;z-index:20}
+#barT{top:0}#barB{bottom:0}
+#grain{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:15;opacity:.05;mix-blend-mode:overlay;pointer-events:none}
+#vignette{position:absolute;inset:0;z-index:14;background:radial-gradient(ellipse 75% 70% at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.75) 100%)}
+#fade{position:absolute;inset:0;background:#000;z-index:18}
+#title{position:absolute;inset:0;z-index:19;display:flex;align-items:center;justify-content:flex-start;padding-right:330px;padding-bottom:120px;font:700 120px Amiri;color:#e9e4da;letter-spacing:0;text-shadow:0 0 40px rgba(0,0,0,.8)}
+#sub{position:absolute;left:0;right:0;top:790px;z-index:19;text-align:center;font:500 46px/1.5 Tajawal;color:#f2efe8;text-shadow:0 2px 6px rgba(0,0,0,.95),0 0 24px rgba(0,0,0,.8)}
+#sub .who{color:#9fb0cc;font-weight:400;font-size:36px}
+#end{position:absolute;inset:0;z-index:19;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;text-align:center}
+#end .q{font:400 66px/1.6 Amiri;color:#ece7dd;max-width:1300px}
+#end .l{width:0;height:1px;background:rgba(236,231,221,.5)}
+/* phone close-up */
+#phoneWrap{position:absolute;left:770px;top:170px;width:380px;height:760px}
+#screenUI{position:absolute;inset:18px;border-radius:44px;overflow:hidden;text-align:center;color:#fff}
+#screenUI .name{position:absolute;top:240px;width:100%;font:700 64px Tajawal}
+#screenUI .st{position:absolute;top:330px;width:100%;font:400 28px Tajawal;color:#a9b6cc}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ROOM (wide shots) -->
+  <svg class="layer" id="room" viewBox="0 0 1920 1080">
+    <defs>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d111b"/><stop offset="1" stop-color="#080a10"/></linearGradient>
+      <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a0c12"/><stop offset="1" stop-color="#050609"/></linearGradient>
+      <linearGradient id="win" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3a57"/><stop offset="1" stop-color="#131c2c"/></linearGradient>
+      <linearGradient id="shaft" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fb8e6" stop-opacity=".10"/><stop offset="1" stop-color="#9fb8e6" stop-opacity=".02"/></linearGradient>
+      <radialGradient id="phoneGlow"><stop offset="0" stop-color="#bcd2ff" stop-opacity=".55"/><stop offset=".35" stop-color="#7f9ad0" stop-opacity=".18"/><stop offset="1" stop-color="#7f9ad0" stop-opacity="0"/></radialGradient>
+      <radialGradient id="faceLitA" cx=".78" cy=".78" r=".75"><stop offset="0" stop-color="#5a719c"/><stop offset=".45" stop-color="#161d2c"/><stop offset="1" stop-color="#05060a"/></radialGradient>
+      <radialGradient id="faceLitB" cx=".85" cy=".45" r=".6"><stop offset="0" stop-color="#3c4d6e"/><stop offset=".5" stop-color="#121826"/><stop offset="1" stop-color="#05060a"/></radialGradient>
+      <linearGradient id="bodyLit" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#1a2234"/><stop offset=".5" stop-color="#07080d"/><stop offset="1" stop-color="#05060a"/></linearGradient>
+      <filter id="blur20"><feGaussianBlur stdDeviation="20"/></filter>
+      <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
+    </defs>
+    <g id="roomCam">
+      <rect width="1920" height="1080" fill="url(#wall)"/>
+      <rect y="860" width="1920" height="220" fill="url(#floor)"/>
+      <!-- window -->
+      <rect x="230" y="160" width="320" height="400" fill="#05070b"/>
+      <rect x="244" y="174" width="292" height="372" fill="url(#win)"/>
+      <circle cx="330" cy="250" r="90" fill="#9fb8e6" opacity=".10" filter="url(#blur20)"/>
+      <rect x="384" y="174" width="12" height="372" fill="#05070b"/>
+      <rect x="244" y="354" width="292" height="12" fill="#05070b"/>
+      <path d="M220 150 C260 260 250 420 280 590 L200 590 L200 150 Z" fill="#06080c"/>
+      <polygon points="244,174 536,174 820,880 430,880" fill="url(#shaft)" filter="url(#blur20)"/>
+      <polygon points="400,880 800,880 900,1080 360,1080" fill="#9fb8e6" opacity=".035" filter="url(#blur20)"/>
+      <!-- bed -->
+      <rect x="600" y="742" width="760" height="30" rx="10" fill="#151a25"/>
+      <rect x="610" y="770" width="740" height="92" fill="#0c0f16"/>
+      <rect x="1200" y="700" width="140" height="48" rx="20" fill="#121722"/>
+      <rect x="1360" y="560" width="26" height="320" fill="#0a0c12"/>
+      <!-- shelf / frame on wall -->
+      <rect x="1460" y="300" width="160" height="200" fill="#0b0e15" stroke="#141a26" stroke-width="6"/>
+
+      <!-- glow behind man -->
+      <circle id="glowA" cx="1010" cy="590" r="300" fill="url(#phoneGlow)"/>
+      <circle id="glowB" cx="935" cy="450" r="190" fill="url(#phoneGlow)" opacity="0"/>
+
+      <!-- MAN pose A: looking at phone -->
+      <g id="manA">
+        <path d="M760 730 L1010 722 Q1045 726 1048 760 L1040 792 L760 800 Z" fill="#06070b"/>
+        <path d="M1000 770 L1048 760 L1052 945 L1010 948 Z" fill="#05060a"/>
+        <path d="M1005 925 L1060 925 Q1088 930 1088 950 L1005 952 Z" fill="#05060a"/>
+        <path d="M845 500 C800 515 770 560 762 640 L755 772 L950 772 C958 700 955 625 935 572 C918 530 892 505 870 498 Z" fill="url(#bodyLit)"/>
+        <path d="M862 482 L898 488 L902 525 L858 520 Z" fill="#07080d"/>
+        <ellipse cx="905" cy="448" rx="48" ry="56" transform="rotate(22 905 448)" fill="url(#faceLitA)"/>
+        <path d="M858 430 C860 385 905 372 940 392 C925 395 905 400 890 420 C878 440 870 455 862 462 Z" fill="#040508"/>
+        <path d="M900 560 Q945 640 990 700 L1025 628" fill="none" stroke="#07080d" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="1024" cy="616" r="24" fill="#0a0c13"/>
+        <g transform="rotate(-28 1025 600)">
+          <rect x="1012" y="576" width="28" height="48" rx="5" fill="#0b0d14"/>
+          <rect x="1015" y="579" width="22" height="42" rx="3" fill="#cfe0ff" opacity=".9"/>
+        </g>
+      </g>
+
+      <!-- MAN pose B: phone at ear -->
+      <g id="manB" opacity="0">
+        <path d="M760 730 L1010 722 Q1045 726 1048 760 L1040 792 L760 800 Z" fill="#06070b"/>
+        <path d="M1000 770 L1048 760 L1052 945 L1010 948 Z" fill="#05060a"/>
+        <path d="M1005 925 L1060 925 Q1088 930 1088 950 L1005 952 Z" fill="#05060a"/>
+        <path d="M840 500 C798 515 772 560 764 640 L755 772 L950 772 C958 700 952 620 932 568 C915 528 890 506 866 498 Z" fill="url(#bodyLit)"/>
+        <path d="M858 478 L894 482 L898 522 L854 518 Z" fill="#07080d"/>
+        <path d="M880 575 Q930 685 1000 735" fill="none" stroke="#06070b" stroke-width="44" stroke-linecap="round"/>
+        <ellipse cx="898" cy="440" rx="48" ry="56" transform="rotate(10 898 440)" fill="url(#faceLitB)"/>
+        <path d="M852 420 C858 378 902 368 936 388 C920 392 900 398 886 416 C874 432 866 448 858 456 Z" fill="#040508"/>
+        <path d="M905 560 Q975 600 1000 640 L948 478" fill="none" stroke="#07080d" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+        <g transform="rotate(-12 935 450)">
+          <rect x="922" y="420" width="26" height="54" rx="5" fill="#0b0d14"/>
+          <rect x="924" y="424" width="4" height="46" fill="#9fb8e6" opacity=".6"/>
+        </g>
+        <circle cx="948" cy="468" r="24" fill="#0a0c13"/>
+      </g>
+    </g>
+  </svg>
+
+  <!-- PHONE CLOSE-UP -->
+  <div class="layer" id="phoneShot" style="background:radial-gradient(ellipse 50% 60% at 50% 50%,#141b2b 0%,#06070b 70%)">
+    <div id="phoneJit" class="layer">
+      <svg class="layer" viewBox="0 0 1920 1080">
+        <defs>
+          <radialGradient id="pg2"><stop offset="0" stop-color="#9fb8ff" stop-opacity=".35"/><stop offset="1" stop-color="#9fb8ff" stop-opacity="0"/></radialGradient>
+          <linearGradient id="scr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a44"/><stop offset="1" stop-color="#0d1322"/></linearGradient>
+        </defs>
+        <circle cx="960" cy="540" r="560" fill="url(#pg2)"/>
+        <rect x="770" y="170" width="380" height="760" rx="56" fill="#0a0b10" stroke="#2a3040" stroke-width="3"/>
+        <rect x="788" y="188" width="344" height="724" rx="44" fill="url(#scr)"/>
+        <!-- avatar + pulse -->
+        <circle id="pulse1" cx="960" cy="330" r="70" fill="none" stroke="#9fb8e6" stroke-width="2"/>
+        <circle id="pulse2" cx="960" cy="330" r="70" fill="none" stroke="#9fb8e6" stroke-width="2"/>
+        <circle cx="960" cy="330" r="64" fill="#2c3b5c"/>
+        <circle cx="960" cy="312" r="22" fill="#8fa3c8"/>
+        <path d="M922 372 C926 342 994 342 998 372 Z" fill="#8fa3c8"/>
+        <!-- buttons -->
+        <circle cx="870" cy="800" r="44" fill="#d64545"/>
+        <path d="M850 806 Q870 790 890 806" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle id="accept" cx="1050" cy="800" r="44" fill="#2fb36a"/>
+        <path d="M1030 796 Q1050 812 1070 796" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <!-- hands -->
+        <path d="M700 1080 L700 760 Q705 690 780 700 L800 720 Q790 800 800 870 L860 1080 Z" fill="#07080c"/>
+        <path d="M1220 1080 L1225 760 Q1215 690 1140 700 L1122 720 Q1135 800 1120 870 L1060 1080 Z" fill="#07080c"/>
+        <path d="M1090 900 Q1060 860 1078 830 Q1100 840 1118 880 Z" fill="#090a10"/>
+        <rect id="flash" x="788" y="188" width="344" height="724" rx="44" fill="#fff" opacity="0"/>
+      </svg>
+      <div id="phoneWrap"><div id="screenUI"><div class="name">أمي</div><div class="st">مكالمة واردة…</div></div></div>
+    </div>
+  </div>
+
+  <!-- FACE CLOSE-UP -->
+  <svg class="layer" id="face" viewBox="0 0 1920 1080">
+    <defs>
+      <radialGradient id="bgF" cx=".8" cy=".7" r=".7"><stop offset="0" stop-color="#1a2438"/><stop offset=".6" stop-color="#080a10"/><stop offset="1" stop-color="#030406"/></radialGradient>
+      <linearGradient id="rim" x1="800" y1="0" x2="1160" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a9c2f0" stop-opacity="0"/><stop offset=".55" stop-color="#a9c2f0" stop-opacity=".35"/><stop offset="1" stop-color="#d6e4ff" stop-opacity=".95"/></linearGradient>
+      <radialGradient id="cheek" cx=".85" cy=".55" r=".5"><stop offset="0" stop-color="#2a3956" stop-opacity=".9"/><stop offset="1" stop-color="#2a3956" stop-opacity="0"/></radialGradient>
+      <radialGradient id="tearG" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#cfe0ff" stop-opacity=".9"/><stop offset="1" stop-color="#6f8fc8" stop-opacity=".3"/></radialGradient>
+      <filter id="b2"><feGaussianBlur stdDeviation="2"/></filter>
+      <filter id="b10"><feGaussianBlur stdDeviation="10"/></filter>
+      <clipPath id="faceClip"><path id="fp" d="M620 60 C760 40 980 90 1050 200 C1075 240 1085 300 1088 335 C1086 352 1078 362 1080 378 C1100 410 1135 440 1152 468 C1158 480 1150 492 1132 496 L1100 500 C1098 512 1112 524 1112 538 C1108 552 1092 556 1092 566 C1094 578 1108 584 1106 598 C1100 612 1082 616 1082 628 C1088 650 1098 668 1090 690 C1072 728 1030 742 990 748 C985 790 980 830 975 1080 L560 1080 C540 900 520 760 540 600 C548 420 540 200 620 60 Z"/></clipPath>
+    </defs>
+    <g id="faceCam">
+      <rect width="1920" height="1080" fill="url(#bgF)"/>
+      <use href="#fp" fill="#040508"/>
+      <g clip-path="url(#faceClip)">
+        <ellipse cx="1060" cy="520" rx="140" ry="200" fill="url(#cheek)"/>
+      </g>
+      <use href="#fp" fill="none" stroke="url(#rim)" stroke-width="22" filter="url(#b10)" opacity=".7"/>
+      <use href="#fp" fill="none" stroke="url(#rim)" stroke-width="4" filter="url(#b2)"/>
+      <!-- brow + eye -->
+      <path d="M985 318 Q1020 306 1058 318" stroke="#0b0e16" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <path d="M992 362 Q1014 348 1040 360 Q1018 374 992 366 Z" fill="#0f1420"/>
+      <path d="M992 360 Q1014 346 1042 358" stroke="#020305" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path id="wet" d="M1005 368 Q1022 374 1040 362" stroke="#bcd2ff" stroke-width="2" fill="none" opacity=".5"/>
+      <circle cx="1030" cy="360" r="3" fill="#e6efff" opacity=".9"/>
+      <!-- tear -->
+      <path id="trail" d="M1036 372 C1044 410 1050 450 1060 500 C1066 530 1072 560 1076 590" stroke="#cfe0ff" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"/>
+      <g id="tear" opacity="0"><path d="M0 -14 C6 -4 10 2 10 7 A10 10 0 0 1 -10 7 C-10 2 -6 -4 0 -14 Z" fill="url(#tearG)"/><circle cx="-3" cy="4" r="2.4" fill="#fff"/></g>
+    </g>
+  </svg>
+
+  <div id="title">آخر فرصة</div>
+  <div id="sub"></div>
+  <div id="end" style="opacity:0"><div class="l" id="endLine"></div><div class="q">أحياناً، أكثر الناس ابتساماً<br>هم أكثرهم ألماً</div></div>
+
+  <canvas id="grain" width="640" height="360"></canvas>
+  <div id="vignette"></div>
+  <div id="fade"></div>
+  <div class="bar" id="barT"></div><div class="bar" id="barB"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const eo=x=>1-Math.pow(1-x,3), eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const p=(t,a,b,e=eio)=>e(clamp((t-a)/(b-a)));
+const win=(t,a,b,fi=.35,fo=.35)=>p(t,a,a+fi)*(1-p(t,b-fo,b));
+
+// deterministic grain
+const g=$('grain').getContext('2d'); const img=g.createImageData(640,360);
+function grain(seed){let s=seed*2654435761>>>0;const d=img.data;
+  for(let i=0;i<d.length;i+=4){s^=s<<13;s^=s>>>17;s^=s<<5;const v=(s>>>0)&255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}
+  g.putImageData(img,0,0);}
+
+const subs=[
+  [7.3,9.8,'<span class="who">الأم: </span>«يا ولدي، إنت كويس؟ بقينا ما بنسمع صوتك.»'],
+  [10.0,12.0,'<span class="who">الشاب: </span>«أنا تعبت يا أمي…»'],
+  [13.0,15.6,'<span class="who">الشاب: </span>«بس ما داير أخذلك.»'],
+];
+
+window.seek=function(t){
+  grain(Math.floor(t*30)+1);
+  const wide = t<5 || (t>=7 && t<12), phone = t>=5&&t<7, face = t>=12&&t<17.6;
+  $('room').style.display=wide?'block':'none';
+  $('phoneShot').style.display=phone?'block':'none';
+  $('face').style.display=face?'block':'none';
+
+  // wide camera: slow push-in
+  if(t<5){
+    const s=1+0.08*p(t,0,5,x=>x);
+    $('roomCam').setAttribute('transform',`translate(930 640) scale(${s}) translate(-930 -640)`);
+    $('manA').setAttribute('opacity',1); $('manB').setAttribute('opacity',0);
+    $('glowA').setAttribute('opacity',(0.85+0.15*Math.sin(t*2.3)).toFixed(3)); $('glowB').setAttribute('opacity',0);
+  } else if(t>=7 && t<12){
+    const s=1.10+0.07*p(t,7,12,x=>x);
+    $('roomCam').setAttribute('transform',`translate(920 520) scale(${s}) translate(-920 -520)`);
+    $('manA').setAttribute('opacity',0); $('manB').setAttribute('opacity',1);
+    $('glowA').setAttribute('opacity',0); $('glowB').setAttribute('opacity',.8);
+  }
+
+  // phone ringing
+  if(phone){
+    const buzz=(t>=5.15&&t<5.75)||(t>=6.05&&t<6.6);
+    const jx=buzz?Math.sin(t*190)*4:0, jy=buzz?Math.cos(t*170)*2:0;
+    const s=1+0.05*p(t,5,7,x=>x);
+    $('phoneJit').style.transform=`translate(${jx}px,${jy}px) scale(${s})`;
+    const ph=((t-5)%0.9)/0.9, ph2=((t-5+0.45)%0.9)/0.9;
+    for(const [id,v] of [['pulse1',ph],['pulse2',ph2]]){ $(id).setAttribute('r',70+v*70); $(id).setAttribute('opacity',(1-v)*.7); }
+    const press=p(t,6.6,6.75)-p(t,6.75,6.9);
+    $('accept').setAttribute('r',44-press*6);
+    $('flash').setAttribute('opacity',p(t,6.75,7.0)*.35);
+  }
+
+  // face close-up
+  if(face){
+    const s=1+0.06*p(t,12,17.6,x=>x);
+    $('faceCam').setAttribute('transform',`translate(1040 400) scale(${s}) translate(-1040 -400)`);
+    $('wet').setAttribute('opacity',(0.4+0.5*p(t,14.2,15.4)).toFixed(3));
+    // tear forms at eye, then runs down cheek
+    const form=p(t,14.9,15.6,eo), run=p(t,15.6,16.8,x=>x*x*(3-2*x));
+    const trail=$('trail'), L=trail.getTotalLength();
+    const pt=trail.getPointAtLength(run*L*0.95);
+    const sc=0.25+0.75*form;
+    $('tear').setAttribute('transform',`translate(${pt.x} ${pt.y}) scale(${sc})`);
+    $('tear').setAttribute('opacity',form*(1-p(t,16.9,17.3)));
+    trail.setAttribute('stroke-dasharray',`${run*L} ${L}`);
+    trail.setAttribute('opacity',run>0?0.45*(1-p(t,16.9,17.3)):0);
+  }
+
+  // title
+  $('title').style.opacity=win(t,0.8,4.0,.9,.9);
+
+  // subtitles
+  let html='',op=0;
+  for(const [a,b,s] of subs){ if(t>=a&&t<b){html=s;op=win(t,a,b,.25,.25);} }
+  $('sub').innerHTML=html; $('sub').style.opacity=op;
+
+  // end card
+  $('end').style.opacity=p(t,17.6,18.2)*(1-p(t,19.6,20));
+  $('endLine').style.width=(p(t,17.8,18.8)*260)+'px';
+
+  // fades / cuts to black
+  let f=1-p(t,0,1.4);
+  f=Math.max(f,p(t,4.85,5.0)*(1-p(t,5.0,5.08)));
+  f=Math.max(f,p(t,16.9,17.5));
+  if(t>=17.5) f=1;
+  $('fade').style.opacity=f;
+};
+window.seek(0);
+</script>
+</body>
+</html>
