@@ -637,24 +637,38 @@ function fire(a,b){if(!A)return;for(const[t,fn]of EV){if(t>b)break;if(t>a&&b-t<.
 /* ---------- character voices (Web Speech) ---------- */
 const $=id=>document.getElementById(id);
 const SS=window.speechSynthesis;let voiceOn=true,VO={},duck=0;
-const CAST={'آدم':{p:1,r:1.02,g:'m'},'يوسف':{p:.8,r:.88,g:'m',v:.95},'سارة':{p:1.35,r:1,g:'f'},'كريم':{p:.7,r:.92,g:'m2'},'الرجل الغامض':{p:.35,r:.78,g:'m2'},'يوسف (همس)':{p:.6,r:.75,g:'m',v:.55}};
-const FEM=/hoda|laila|layla|salma|zariyah|amira|amany|mariam|maryam|fatima|sana|female/i,MAL=/naayf|maged|majed|hamed|tarik|shakir|hamdan|omar|\bmale/i;
+/* role: which voice; p/r: pitch and rate when that voice is shared with another character; np/nr: when the character has a voice of their own */
+const CAST={
+  'آدم':{role:'adam',p:1,r:1.02,np:1,nr:1},
+  'يوسف':{role:'yousef',p:.8,r:.88,np:.95,nr:.9,v:.95},
+  'سارة':{role:'sara',p:1.35,r:1,np:1,nr:.95},
+  'كريم':{role:'karim',p:.7,r:.92,np:.95,nr:.92},
+  'الرجل الغامض':{role:'man',p:.35,r:.78,np:.75,nr:.8},
+  'يوسف (همس)':{role:'yousef',p:.6,r:.75,np:.85,nr:.8,v:.55}};
+const FEM=/hoda|laila|layla|salma|zariyah|amira|amany|mariam|maryam|fatima|sana|noura|mouna|rana|amina|iman|aysha|reem|female/i;
+const MAL=/naayf|maged|majed|hamed|tarik|shakir|hamdan|omar|taim|rami|laith|ali\b|bassel|fahed|jamal|moaz|ismael|kareem|hedi|abdullah|\bmale/i;
+const NAT=/natural|online|neural|premium|enhanced|siri/i;
 function pickVoices(){
   const st=$('vstat');
   if(!SS){st.textContent='هذا المتصفح لا يدعم قراءة النص بصوت، لذلك يظهر الحوار كترجمة فقط.';return}
   let vs=[];try{vs=SS.getVoices().filter(v=>/^ar/i.test(v.lang))}catch(e){}
   if(!vs.length){VO={};st.textContent='لم يتم العثور على صوت عربي في هذا الجهاز بعد، لذلك يظهر الحوار كترجمة فقط. يمكنك إضافة صوت عربي من إعدادات النظام (تحويل النص إلى كلام) ثم إعادة فتح الصفحة.';return}
-  const pref=v=>(/eg/i.test(v.lang)?4:0)+(v.localService?1:0);vs.sort((a,b)=>pref(b)-pref(a));
-  const m=vs.filter(v=>MAL.test(v.name)),f=vs.filter(v=>FEM.test(v.name));
-  const male=m[0]||vs.find(v=>!FEM.test(v.name))||vs[0],fem=f[0]||vs.find(v=>v!==male)||male,male2=m[1]||vs.find(v=>v!==male&&v!==fem)||male;
-  VO={m:male,f:fem,m2:male2};
-  st.textContent='صوت الحوار: '+[...new Set([male,fem,male2].map(v=>v.name))].join('، ')+' (من جهازك).';
+  const score=v=>(NAT.test(v.name)?10:0)+(/eg/i.test(v.lang)?4:0);vs.sort((a,b)=>score(b)-score(a));
+  const f=vs.filter(v=>FEM.test(v.name)),m=vs.filter(v=>!FEM.test(v.name));
+  const males=m.length?m:vs,fem=f[0]||vs.find(v=>v!==males[0])||males[0];
+  const pick=i=>males[Math.min(i,males.length-1)];
+  VO={adam:pick(0),yousef:pick(1),karim:pick(2),man:males.length>3?pick(3):pick(2),sara:fem,m:pick(0)};
+  const used=[...new Set(Object.values(VO))],natural=used.some(v=>NAT.test(v.name));
+  const short=v=>v.name.replace(/^Microsoft\s+|^Google\s+/,'').replace(/\s*-\s*Arabic.*$/,'');
+  st.textContent='أصوات الحوار من جهازك: '+used.map(short).join('، ')+'.'+(natural?' هذه أصوات طبيعية.':' لأصوات أقرب للإنسان افتح الرابط في متصفح Microsoft Edge، ففيه أصوات مصرية طبيعية.');
 }
 pickVoices();if(SS&&SS.addEventListener)SS.addEventListener('voiceschanged',pickVoices);
 function say(s){
   if(!SS||!voiceOn||muted||!VO.m)return;const ch=CAST[s[2]];if(!ch)return;
   const u=new SpeechSynthesisUtterance(s[3].replace(/\.\.\./g,'، ').replace(/ـ/g,''));
-  const v=VO[ch.g]||VO.m;u.lang=v.lang;try{u.voice=v}catch(e){}u.pitch=ch.p;u.rate=ch.r;u.volume=ch.v??1;
+  const v=VO[ch.role]||VO.m;u.lang=v.lang;try{u.voice=v}catch(e){}
+  const own=['adam','yousef','sara','karim','man'].find(k=>VO[k]===v)===ch.role;
+  u.pitch=own?ch.np:ch.p;u.rate=own?ch.nr:ch.r;u.volume=ch.v??1;
   u.onstart=()=>{duck=1;spoke=true};u.onend=u.onerror=()=>{duck=0};
   try{SS.speak(u)}catch(e){}
   if(!spoke&&!speechWarned)setTimeout(()=>{if(!spoke&&!speechWarned&&playing){speechWarned=true;showNotice('قراءة الحوار بصوت غير متاحة هنا. افتح الرابط في متصفح مثل Chrome أو Safari',7000)}},3000);
