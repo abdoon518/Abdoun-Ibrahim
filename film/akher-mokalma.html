@@ -43,6 +43,9 @@ header p{margin:0;color:var(--muted);font-size:14px;letter-spacing:.02em}
 .card .list dd{margin:0;text-align:right}
 .poster{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2cqw;background:radial-gradient(ellipse at 50% 55%,rgba(0,0,0,.15),rgba(0,0,0,.72));transition:opacity .5s}
 .poster[hidden]{display:none!important}
+.notice{all:unset;position:absolute;top:13%;left:50%;transform:translateX(-50%);max-width:84%;padding:.55em 1.2em;border-radius:999px;background:rgba(240,234,222,.94);color:#0a0b0d;font-family:var(--body);font-weight:600;font-size:clamp(11px,1.7cqw,20px);text-align:center;cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,.5)}
+.notice[hidden]{display:none!important}
+.notice:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .poster .big{font-family:var(--display);font-weight:700;font-size:clamp(34px,10cqw,140px);line-height:1;color:#f2ece1;text-shadow:0 2px 30px rgba(0,0,0,.8)}
 .poster button{all:unset;display:flex;align-items:center;gap:.6em;padding:.7em 1.5em;border-radius:999px;background:rgba(240,234,222,.92);color:#0a0b0d;font-family:var(--body);font-weight:600;font-size:clamp(13px,1.9cqw,22px);cursor:pointer}
 .poster button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
@@ -95,6 +98,7 @@ header p{margin:0;color:var(--muted);font-size:14px;letter-spacing:.02em}
         <dt>الرجل الغامض</dt><dd>؟</dd>
       </dl>
     </div>
+    <button class="notice" id="notice" type="button" hidden></button>
     <div class="poster" id="poster">
       <div class="big">آخر مكالمة</div>
       <button id="bigPlay" type="button"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg>شاهد الفيلم</button>
@@ -651,8 +655,9 @@ function say(s){
   if(!SS||!voiceOn||muted||!VO.m)return;const ch=CAST[s[2]];if(!ch)return;
   const u=new SpeechSynthesisUtterance(s[3].replace(/\.\.\./g,'، ').replace(/ـ/g,''));
   const v=VO[ch.g]||VO.m;u.lang=v.lang;try{u.voice=v}catch(e){}u.pitch=ch.p;u.rate=ch.r;u.volume=ch.v??1;
-  u.onstart=()=>{duck=1};u.onend=u.onerror=()=>{duck=0};
+  u.onstart=()=>{duck=1;spoke=true};u.onend=u.onerror=()=>{duck=0};
   try{SS.speak(u)}catch(e){}
+  if(!spoke&&!speechWarned)setTimeout(()=>{if(!spoke&&!speechWarned&&playing){speechWarned=true;showNotice('قراءة الحوار بصوت غير متاحة هنا. افتح الرابط في متصفح مثل Chrome أو Safari',7000)}},3000);
 }
 function hush(){if(SS){try{SS.cancel()}catch(e){}}duck=0}
 $('voice').addEventListener('click',()=>{voiceOn=!voiceOn;$('voice').setAttribute('aria-pressed',String(voiceOn));if(!voiceOn)hush()});
@@ -662,11 +667,37 @@ const stage=$('stage'),poster=$('poster'),seek=$('seek'),timeEl=$('time'),subEl=
 let t=0,playing=false,started=false,lastT=0,last=performance.now(),dragging=false,curSub=-2,curHead=-2;
 const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 const ICON_PLAY='M7 4.5v15l12-7.5z',ICON_PAUSE='M6 4.5h4v15H6zm8 0h4v15h-4z';
+/* ---------- unlocking sound on phones ---------- */
+let spoke=false,speechWarned=false,noVoiceWarned=false,unlockEl=null,primed=false,noticeTimer=0;
+const noticeEl=$('notice');
+function showNotice(msg,ms){noticeEl.textContent=msg;noticeEl.hidden=false;clearTimeout(noticeTimer);if(ms)noticeTimer=setTimeout(()=>{noticeEl.hidden=true},ms)}
+noticeEl.addEventListener('click',e=>{e.stopPropagation();unlock();noticeEl.hidden=true;setTimeout(checkSound,700)});
+function silentWav(){const sr=8000,n=4000,b=new Uint8Array(44+n*2),v=new DataView(b.buffer),w=(o,s)=>{for(let i=0;i<s.length;i++)b[o+i]=s.charCodeAt(i)};
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  let s='';for(let i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return 'data:audio/wav;base64,'+btoa(s)}
+function unlock(){
+  /* a silent looping media element moves iPhone audio to the playback channel, so the ring/silent switch no longer mutes the film */
+  try{if(!unlockEl){unlockEl=new Audio(silentWav());unlockEl.loop=true;unlockEl.setAttribute('playsinline','');unlockEl.volume=.01}const p=unlockEl.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}
+  if(!A)initAudio();
+  if(A){try{const r=A.resume();if(r&&r.catch)r.catch(()=>{})}catch(e){}
+    try{const s=A.createBufferSource();s.buffer=A.createBuffer(1,1,22050);s.connect(A.destination);s.start(0)}catch(e){}}
+  /* speech must start inside the tap on iOS and some Android browsers */
+  if(SS&&!primed){primed=true;try{SS.cancel();const u=new SpeechSynthesisUtterance(' ');u.volume=0;SS.speak(u)}catch(e){}}
+}
+function checkSound(){
+  if(!playing)return;
+  if(!A){showNotice('هذا المتصفح لا يشغّل الصوت. جرّب Chrome أو Safari',7000);return}
+  if(A.state!=='running'){showNotice('الصوت متوقف. اضغط هنا لتشغيله');return}
+  if(muted){showNotice('الصوت مكتوم من زر الصوت أسفل الفيلم',4000);return}
+  if(!VO.m&&!noVoiceWarned){noVoiceWarned=true;showNotice('الموسيقى والمؤثرات تعمل، لكن لا يوجد صوت عربي للحوار في هذا الجهاز',7000)}
+}
 function setPlaying(v){
+  if(v)unlock();
   if(v&&t>=DUR-.05){t=0;lastT=0;stopAll()}
   playing=v;$('playIcon').setAttribute('d',v?ICON_PAUSE:ICON_PLAY);$('play').setAttribute('aria-label',v?'إيقاف مؤقت':'تشغيل');
   if(v){if(!started){started=true;poster.hidden=true}if(!A)initAudio();if(A){A.resume();audioTick(t,true)}}
-  else{hush();if(A)A.suspend()}
+  else{hush();if(A)A.suspend();if(unlockEl)try{unlockEl.pause()}catch(e){}}
+  if(v)setTimeout(checkSound,900);
 }
 function jump(nt){t=clamp(nt,0,DUR);lastT=t;stopAll();hush();if(!started){started=true;poster.hidden=true}if(A)audioTick(t,true)}
 $('bigPlay').addEventListener('click',e=>{e.stopPropagation();setPlaying(true)});
