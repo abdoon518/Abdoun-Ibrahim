@@ -54,6 +54,9 @@ header p{margin:0;color:var(--muted);font-size:14px;letter-spacing:.02em}
 .controls svg{width:18px;height:18px;fill:currentColor}
 #time{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;flex:none;min-width:84px;text-align:center}
 #seek{flex:1;min-width:0;accent-color:var(--accent);height:4px;cursor:pointer}
+#voice[aria-pressed="true"]{color:var(--accent)}
+#voice[aria-pressed="false"]{color:var(--muted)}
+.vstat{margin-top:10px!important;font-size:13px;color:var(--muted)!important}
 .chapters{display:flex;flex-wrap:wrap;gap:8px}
 .chapters button{all:unset;cursor:pointer;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--muted);font-family:var(--body)}
 .chapters button:hover{color:var(--fg);border-color:#3a3e46}
@@ -103,6 +106,7 @@ header p{margin:0;color:var(--muted);font-size:14px;letter-spacing:.02em}
     <button id="play" type="button" aria-label="تشغيل"><svg viewBox="0 0 24 24"><path id="playIcon" d="M7 4.5v15l12-7.5z"/></svg></button>
     <span id="time">0:00 / 2:46</span>
     <input type="range" id="seek" min="0" max="166" step="0.1" value="0" aria-label="موضع الفيلم">
+    <button id="voice" type="button" aria-label="أصوات الشخصيات" aria-pressed="true" title="أصوات الشخصيات"><svg viewBox="0 0 24 24"><path d="M9 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c4 0 7 2 7 4.5V20H2v-2.5C2 15 5 13 9 13zm8.6-8.4 1.4-1.4a8 8 0 0 1 0 11.3l-1.4-1.4a6 6 0 0 0 0-8.5zm-2.1 2.1L16.9 5.3a5 5 0 0 1 0 7.1l-1.4-1.4a3 3 0 0 0 0-4.3z"/></svg></button>
     <button id="mute" type="button" aria-label="كتم الصوت"><svg viewBox="0 0 24 24"><path id="muteIcon" d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></button>
     <button id="fs" type="button" aria-label="ملء الشاشة"><svg viewBox="0 0 24 24"><path d="M4 9V4h5v2H6v3H4zm10-5h6v5h-2V6h-4V4zM6 15v3h3v2H4v-5h2zm12 0h2v5h-5v-2h3v-3z"/></svg></button>
   </div>
@@ -118,7 +122,8 @@ header p{margin:0;color:var(--muted);font-size:14px;letter-spacing:.02em}
   <section class="info">
     <div>
       <h2>عن هذه النسخة</h2>
-      <p>نسخة متحركة من السيناريو، مرسومة بالظلال. الحوار يظهر كترجمة على الشاشة، والموسيقى والمؤثرات الصوتية تُولَّد مباشرة في المتصفح: رنين الهاتف، الفرامل، الاصطدام، والهمس الأخير. الموسيقى تبدأ هادئة وتتصاعد مع التوتر، ثم تنقطع تماماً قبل الجملة الأخيرة، وبعدها ثانيتان من الشاشة السوداء.</p>
+      <p>نسخة متحركة من السيناريو، مرسومة بالظلال. الشخصيات تنطق الحوار بصوت عربي من جهازك، ولكل شخصية طبقة صوت مختلفة، والحوار يظهر أيضاً كترجمة على الشاشة. الموسيقى والمؤثرات الصوتية تُولَّد مباشرة في المتصفح: رنين الهاتف، الفرامل، الاصطدام، والهمس الأخير. الموسيقى تبدأ هادئة وتتصاعد مع التوتر، ثم تنقطع تماماً قبل الجملة الأخيرة، وبعدها ثانيتان من الشاشة السوداء.</p>
+      <p class="vstat" id="vstat">جارٍ البحث عن صوت عربي في جهازك…</p>
     </div>
     <ul class="cast">
       <li><i style="background:var(--adam)"></i><b>آدم</b><span>شاب في العشرينات</span></li>
@@ -566,7 +571,7 @@ const HI=[[0,0],[23,0],[25,.3],[33,0],[48,0],[50,.35],[62,0],[76,.2],[82,.5],[90
 function ambAt(t){if(t<6)return[0,400,0];if(t<38)return[.1,700,0];if(t<62)return[.035,1300,0];if(t<106)return[.04,500,.022];if(t<115)return[.17,900,0];if(t<144.95)return[.04,500,.022];return[0,400,0]}
 function audioTick(t,hard){
   if(!A)return;const now=A.currentTime,k=hard?.01:(t>144.6&&t<146)?.015:.3;
-  const m=keyf(MUS,t);bus.music.gain.setTargetAtTime(m,now,k);ct.droneF.frequency.setTargetAtTime(200+m*1700,now,hard?.01:.4);ct.hi.gain.setTargetAtTime(keyf(HI,t)*.6,now,k);
+  const m=keyf(MUS,t)*(1-.4*duck);bus.music.gain.setTargetAtTime(m,now,k);ct.droneF.frequency.setTargetAtTime(200+m*1700,now,hard?.01:.4);ct.hi.gain.setTargetAtTime(keyf(HI,t)*.6,now,k);
   const[a,b,h]=ambAt(t);const ka=(t>144.6&&t<146)||hard?.015:.45;ct.ng.gain.setTargetAtTime(a,now,ka);ct.nf.frequency.setTargetAtTime(b,now,.3);ct.hg.gain.setTargetAtTime(h,now,ka);
 }
 function env(g,t0,a,pk,d){g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(pk,t0+a);g.gain.exponentialRampToValueAtTime(.0001,t0+a+d)}
@@ -625,8 +630,34 @@ at(137.6,FX.boom);at(143.05,FX.whoosh);at(146.2,()=>FX.whisper(4.2));
 EV.sort((a,b)=>a[0]-b[0]);
 function fire(a,b){if(!A)return;for(const[t,fn]of EV){if(t>b)break;if(t>a&&b-t<.3){try{fn()}catch(e){}}}}
 
-/* ---------- player ---------- */
+/* ---------- character voices (Web Speech) ---------- */
 const $=id=>document.getElementById(id);
+const SS=window.speechSynthesis;let voiceOn=true,VO={},duck=0;
+const CAST={'آدم':{p:1,r:1.02,g:'m'},'يوسف':{p:.8,r:.88,g:'m',v:.95},'سارة':{p:1.35,r:1,g:'f'},'كريم':{p:.7,r:.92,g:'m2'},'الرجل الغامض':{p:.35,r:.78,g:'m2'},'يوسف (همس)':{p:.6,r:.75,g:'m',v:.55}};
+const FEM=/hoda|laila|layla|salma|zariyah|amira|amany|mariam|maryam|fatima|sana|female/i,MAL=/naayf|maged|majed|hamed|tarik|shakir|hamdan|omar|\bmale/i;
+function pickVoices(){
+  const st=$('vstat');
+  if(!SS){st.textContent='هذا المتصفح لا يدعم قراءة النص بصوت، لذلك يظهر الحوار كترجمة فقط.';return}
+  let vs=[];try{vs=SS.getVoices().filter(v=>/^ar/i.test(v.lang))}catch(e){}
+  if(!vs.length){VO={};st.textContent='لم يتم العثور على صوت عربي في هذا الجهاز بعد، لذلك يظهر الحوار كترجمة فقط. يمكنك إضافة صوت عربي من إعدادات النظام (تحويل النص إلى كلام) ثم إعادة فتح الصفحة.';return}
+  const pref=v=>(/eg/i.test(v.lang)?4:0)+(v.localService?1:0);vs.sort((a,b)=>pref(b)-pref(a));
+  const m=vs.filter(v=>MAL.test(v.name)),f=vs.filter(v=>FEM.test(v.name));
+  const male=m[0]||vs.find(v=>!FEM.test(v.name))||vs[0],fem=f[0]||vs.find(v=>v!==male)||male,male2=m[1]||vs.find(v=>v!==male&&v!==fem)||male;
+  VO={m:male,f:fem,m2:male2};
+  st.textContent='صوت الحوار: '+[...new Set([male,fem,male2].map(v=>v.name))].join('، ')+' (من جهازك).';
+}
+pickVoices();if(SS&&SS.addEventListener)SS.addEventListener('voiceschanged',pickVoices);
+function say(s){
+  if(!SS||!voiceOn||muted||!VO.m)return;const ch=CAST[s[2]];if(!ch)return;
+  const u=new SpeechSynthesisUtterance(s[3].replace(/\.\.\./g,'، ').replace(/ـ/g,''));
+  const v=VO[ch.g]||VO.m;u.lang=v.lang;try{u.voice=v}catch(e){}u.pitch=ch.p;u.rate=ch.r;u.volume=ch.v??1;
+  u.onstart=()=>{duck=1};u.onend=u.onerror=()=>{duck=0};
+  try{SS.speak(u)}catch(e){}
+}
+function hush(){if(SS){try{SS.cancel()}catch(e){}}duck=0}
+$('voice').addEventListener('click',()=>{voiceOn=!voiceOn;$('voice').setAttribute('aria-pressed',String(voiceOn));if(!voiceOn)hush()});
+
+/* ---------- player ---------- */
 const stage=$('stage'),poster=$('poster'),seek=$('seek'),timeEl=$('time'),subEl=$('sub'),subWho=subEl.querySelector('.who'),subTxt=subEl.querySelector('.txt'),headEl=$('head');
 let t=0,playing=false,started=false,lastT=0,last=performance.now(),dragging=false,curSub=-2,curHead=-2;
 const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -635,16 +666,16 @@ function setPlaying(v){
   if(v&&t>=DUR-.05){t=0;lastT=0;stopAll()}
   playing=v;$('playIcon').setAttribute('d',v?ICON_PAUSE:ICON_PLAY);$('play').setAttribute('aria-label',v?'إيقاف مؤقت':'تشغيل');
   if(v){if(!started){started=true;poster.hidden=true}if(!A)initAudio();if(A){A.resume();audioTick(t,true)}}
-  else if(A)A.suspend();
+  else{hush();if(A)A.suspend()}
 }
-function jump(nt){t=clamp(nt,0,DUR);lastT=t;stopAll();if(!started){started=true;poster.hidden=true}if(A)audioTick(t,true)}
+function jump(nt){t=clamp(nt,0,DUR);lastT=t;stopAll();hush();if(!started){started=true;poster.hidden=true}if(A)audioTick(t,true)}
 $('bigPlay').addEventListener('click',e=>{e.stopPropagation();setPlaying(true)});
 $('play').addEventListener('click',()=>setPlaying(!playing));
 stage.addEventListener('click',()=>setPlaying(!playing));
 seek.addEventListener('input',()=>{dragging=true;jump(+seek.value)});
 seek.addEventListener('change',()=>{dragging=false});
 $('chapters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;jump(+b.dataset.t);if(!playing)setPlaying(true)});
-$('mute').addEventListener('click',()=>{muted=!muted;$('mute').setAttribute('aria-label',muted?'تشغيل الصوت':'كتم الصوت');$('muteIcon').setAttribute('d',muted?'M4 9v6h4l5 4V5L8 9H4zm11.6 3 2.7-2.7 1.4 1.4-2.7 2.7 2.7 2.7-1.4 1.4-2.7-2.7-2.7 2.7-1.4-1.4 2.7-2.7-2.7-2.7 1.4-1.4z':'M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z');if(A)bus.master.gain.setTargetAtTime(muted?0:.9,A.currentTime,.05)});
+$('mute').addEventListener('click',()=>{muted=!muted;if(muted)hush();$('mute').setAttribute('aria-label',muted?'تشغيل الصوت':'كتم الصوت');$('muteIcon').setAttribute('d',muted?'M4 9v6h4l5 4V5L8 9H4zm11.6 3 2.7-2.7 1.4 1.4-2.7 2.7 2.7 2.7-1.4 1.4-2.7-2.7-2.7 2.7-1.4-1.4 2.7-2.7-2.7-2.7 1.4-1.4z':'M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z');if(A)bus.master.gain.setTargetAtTime(muted?0:.9,A.currentTime,.05)});
 $('fs').addEventListener('click',()=>{try{if(document.fullscreenElement)document.exitFullscreen();else{const r=stage.requestFullscreen&&stage.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}}catch(e){}});
 document.addEventListener('keydown',e=>{if(e.target.closest('input,button')&&e.key===' ')return;if(e.key===' '){e.preventDefault();setPlaying(!playing)}else if(e.key==='ArrowRight')jump(t+5);else if(e.key==='ArrowLeft')jump(t-5)});
 const chapBtns=[...document.querySelectorAll('#chapters button')];
@@ -661,7 +692,7 @@ function ui(){
 }
 function frame(now){
   const dt=Math.min(.1,(now-last)/1000);last=now;
-  if(playing){t+=dt;if(t>=DUR){t=DUR;setPlaying(false)}fire(lastT,t);audioTick(t)}
+  if(playing){t+=dt;if(t>=DUR){t=DUR;setPlaying(false)}fire(lastT,t);for(const s of SUB)if(s[0]>lastT&&s[0]<=t&&t-s[0]<.4)say(s);audioTick(t)}
   lastT=t;
   render(started?t:12);ui();
   requestAnimationFrame(frame);
